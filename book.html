@@ -1,0 +1,122 @@
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1"/>
+        <title>도서검색</title>
+        <link rel="stylesheet" href="https://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css" />
+        <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <script src="https://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.1/handlebars.js"></script>
+        <style>
+            #list img{
+                width:50px; height:70px;
+            }
+            #infoBook{
+                margin:0 auto;
+                text-align:center;
+            }
+            #infoBook2{
+                margin:20px auto;
+                background:white;
+                padding:10px;
+                border-radius:10px;
+                text-align:center;
+            }
+            #image{
+                margin:0 auto;
+            }
+            #title{
+                font-size:14pt;
+            }
+            #contents{
+                text-shadow:none;
+                text-align:left;
+                color:black;
+                font-weight:bold;
+                margin:10px;
+                font-size:10pt;
+            }
+        </style>
+    </head>
+    <body>
+        <div data-role="page" id="main">
+            <div data-role="header" data-theme="e" data-position="fixed">
+                <a href="index.html" target="_self" data-icon="home" data-iconpos="notext">Home</a>
+                <h2>도서검색</h2>
+                <a href="index.html" target="_self" data-icon="back" data-iconpos="notext" align="center">Back</a>
+            </div>
+            <div data-role="content">
+                <input type="text" id="txtQuery" value="jQuery"/>
+                <ul data-role="listview" id="list" style="margin:20px 0;"></ul>
+                <script id="temp" type="text/x-handlebars-template">
+                    {{#each documents}}
+                        <li>
+                            <a href="#sub" title="{{title}}" authors="{{authors}}" content="{{contents}}" price="{{price}}"><img src="{{thumbnail}}"/>{{{title}}}</a>
+                        </li>
+                    {{/each}}
+                </script>
+                <input type="button" value="More" id="btnMore"/>
+            </div>
+            <div data-role="footer" data-theme="e" data-position="fixed">
+                <h2>인천일보아카데미 유재환</h2>
+            </div>
+        </div>
+        <!--도서정보출력(클릭시)-->
+        <div data-role="page" id="sub">
+            <div data-role="header" data-theme="e" data-position="fixed">
+                <a href="index.html" target="_self" data-icon="home" data-iconpos="notext">Home</a>
+                <h2>도서정보</h2>
+                <a href="#main" data-icon="back" data-iconpos="notext" align="center">Back</a>
+            </div>
+            <div data-role="content">
+                <div id="infoBook">
+                    <img src="" id="image" width=200 height=250/>
+                    <h1 id="title"></h1>
+                    <h5 id="authors"></h5>
+                </div>
+                <div id="infoBook2">
+                    <p id="contents"></p>
+                </div>
+            </div>
+            <div data-role="footer" data-theme="e" data-position="fixed">
+                <h2>인천일보아카데미 유재환</h2>
+            </div>
+        </div>
+    </body>
+    <script>
+        var size=10;
+        getList();
+        $("#list").on("click","a",function(){
+            var title=$(this).attr("title");
+            var authors=$(this).attr("authors");
+            var contents=$(this).attr("content");
+            var price=$(this).attr("price");
+            var image=$(this).find("img").attr("src");
+            $("#image").attr("src",image);
+            $("#title").html(title);
+            $("#authors").html("저자 : "+authors+" ( 정가 : "+price+"원 )");
+            $("#contents").html(contents);
+        });
+        $("#btnMore").on("click",function(){
+            size+=5;
+            getList();
+        });
+        $("#txtQuery").on("keydown",function(){
+            size=10;
+            getList();
+        });
+        function getList(){
+            var query=$("#txtQuery").val();
+            $.ajax({
+                type:"get",
+                url:"https://dapi.kakao.com/v3/search/book?target=title",
+                dateType:"json",
+                data:{"query":query,"size":size},
+                headers:{"Authorization":"KakaoAK 86bcfbe2e730c6fd61219287087b0991"},
+                success:function(data){
+                    var temp=Handlebars.compile($("#temp").html());
+                    $("#list").html(temp(data)).listview("refresh");
+                }
+            });
+        }
+    </script>
+</html>
